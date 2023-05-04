@@ -1,15 +1,15 @@
 import { useSelector, useDispatch } from 'react-redux'
-import { load } from 'store/seriesStore'
+import { load } from 'store/moviesStore'
 import React, { useState, useEffect } from 'react';
 import Loading from 'components/Loading'
-import SeriesList from './SeriesList'
+import MoviesList from './MoviesList'
 import {compareByTitle} from 'common/utils'
 
-export default function Series() {
+export default function Movies() {
     const [loadingInitial, setLoadingInitial] = useState(true);
     const [loadingData, setLoadingData] = useState(false);
-    const series = useSelector(state => state.series.value);
     const [fetchError, setFetchError] = useState(false);
+    const movies = useSelector(state => state.movies.value);
     const dispatch = useDispatch()
     const [yearList, setYearList] = useState([]);
     const [selectedYear, setSelectedYear] = useState("0");
@@ -27,47 +27,46 @@ export default function Series() {
         }
         return data;
     }
-    const fetchSeries = async () => {
+    const fetchMovies = async () => {
         
         setLoadingData(true);
         let data = await fetchJson();
-
-        let serieArray = data.entries.filter(x => x.programType === 'movie' && x.releaseYear >= 2010)
-        if (serieArray.length > 20) serieArray = serieArray.slice(0, 19)
-        serieArray = serieArray.sort(compareByTitle);
-        let years = [...new Set(serieArray.map(item => item.releaseYear))]; 
+        
+        let movieArray = data.entries.filter(x => x.programType === 'movie' && x.releaseYear >= 2010)
+        if (movieArray.length > 20) movieArray = movieArray.slice(0, 19)
+        movieArray = movieArray.sort(compareByTitle);
+        let years = [...new Set(movieArray.map(item => item.releaseYear))]; 
         setYearList(years)
-        dispatch(load(serieArray));
+        dispatch(load(movieArray));
         setLoadingInitial(false)
         setLoadingData(false);
-        
     }
+    
     useEffect(() => {
         if (loadingInitial && !loadingData)
-            fetchSeries()
-    })    
-
+        fetchMovies()
+    })
     useEffect(() => {
-        let data = series
+        let data = movies
         if (selectedYear !== "0")
             data = data.filter(x => x.releaseYear == selectedYear)
         
         setFilteredData(data)
-    },[series, selectedYear])
-
+    },[movies, selectedYear])
     if (fetchError) 
         return (
             <div>
                 <div className=" bg-gradient-to-b from-slate-500 to-slate-700 text-white h-12 flex items-center drop-shadow-lg">
-                    <span className="ml-10">Series</span>
+                    <span className="ml-10">Movies</span>
                 </div>
                 Oops, something went wrong.
             </div>
         )
+    
     return (
         <div>
             <div className=" bg-gradient-to-b from-slate-500 to-slate-700 text-white h-12 flex items-center drop-shadow-lg">
-                <span className="ml-10">Series</span>
+                <span className="ml-10">Movies</span>
             </div>
             <div className="flex items-center justify-center p-2">
                 <div>Filter by release year: </div>
@@ -83,7 +82,7 @@ export default function Series() {
                 </div>
             </div>
             <div className='mt-2'>
-                {(loadingData || loadingInitial) ? <Loading /> : <SeriesList series={filteredData} />}
+                {(loadingData || loadingInitial) ? <Loading /> : <MoviesList movies={filteredData} />}
             </div>
         </div>
     )
