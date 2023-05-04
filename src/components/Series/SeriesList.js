@@ -7,7 +7,7 @@ export default function SeriesList({series}) {
             return object.images['Poster Art'].url
     }
     return (
-        <div className="m-auto w-3/4 space-x-4">  
+        <div className="m-auto w-full md:w-3/4  space-x-6 md:space-x-4">  
             <span></span>
             {
                 series.map(x =>

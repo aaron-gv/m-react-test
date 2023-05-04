@@ -31,7 +31,7 @@ export default function Card({title, url, image, imageText, year, description, t
     return (
         <Link to={url} className='float-left'>
 
-            <div ref={cardRef} className="w-40 group">
+            <div ref={cardRef} className="w-24 md:w-40 group">
                 {
                     tooltip &&
                     <div className='z-20 absolute w-40 scale-0 group-hover:scale-100 rounded bg-gray-800 p-2 text-xs text-white'>
@@ -41,7 +41,7 @@ export default function Card({title, url, image, imageText, year, description, t
                     </div>
                 }
                 
-                <div className="relative flex items-center aspect-[2/3] h-40 m-auto bg-slate-800">
+                <div className="relative flex items-center aspect-[2/3] h-30 md:h-40 m-auto bg-slate-800">
                     <img alt={title} src={posterImage} onError={e => onImageError} />
                     { imageText !== '' && imageText !== undefined ? <div className='absolute w-full text-center text-white'>{imageText}</div> : (!loadedImage ) ? <div className='absolute w-full text-center text-white'>Loading...</div> : null}
                     
