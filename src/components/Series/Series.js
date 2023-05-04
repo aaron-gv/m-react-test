@@ -15,7 +15,7 @@ export default function Series() {
     const [selectedYear, setSelectedYear] = useState("0");
     const [filteredData, setFilteredData] = useState([]);
     const [pages, setPages] = useState(0);
-    const itemsPerPage = 20;
+    const [itemsPerPage, setItemsPerPage] = useState(20);
     const [dataOffset, setDataOffset] = useState(0);
     const onChangeYearFilter = event => {
         setSelectedYear(event.target.value)
@@ -57,11 +57,13 @@ export default function Series() {
         let data = series
         if (selectedYear !== "0")
             data = data.filter(x => x.releaseYear == selectedYear)
-        setPages(Math.ceil(data.length/20))
+        setPages(Math.ceil(data.length/itemsPerPage))
         setFilteredData(data)
-        
-    },[series, selectedYear])
-
+    },[series, selectedYear, itemsPerPage, dataOffset])
+    
+    useEffect(() => {
+        setDataOffset(0)
+    }, [itemsPerPage])
 
     if (fetchError) 
         return (
@@ -89,14 +91,25 @@ export default function Series() {
                         }
                     </select>
                 </div>
+                <div className="float-left ml-4">
+                    Show: 
+                </div>
+                <div className="float-left ml-2">
+                    <select value={itemsPerPage} onChange={e => setItemsPerPage(parseInt(e.target.value))}>
+                        <option value={20}>20</option>
+                        <option value={15}>15</option>
+                        <option value={10}>10</option>
+                        <option value={5}>5</option>
+                    </select>
+                </div>
             </div>
             <div className='mt-2 w-full overflow-hidden'>
                 {(loadingData || loadingInitial) ? <Loading /> : 
                     <div className='overflow-hidden'>
                         <div className="overflow-hidden">
-                            <SeriesList series={filteredData.slice((dataOffset*20), (dataOffset*20)+itemsPerPage)} />
+                            <SeriesList series={filteredData.slice((dataOffset*itemsPerPage), (dataOffset*itemsPerPage)+itemsPerPage)} />
                         </div>
-                        <Pagination pages={pages} itemsPerPage={itemsPerPage} current={dataOffset} action={(x) => setDataOffset(x)} />
+                        <Pagination pages={pages} itemsPerPage={itemsPerPage} current={dataOffset} action={(x) => setDataOffset(parseInt(x))} />
                         
                     </div>
                 }
