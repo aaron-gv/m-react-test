@@ -12,12 +12,17 @@ export default function Card({title, url, image, imageText, year, description, t
     
     const fetchImage = async (url) => {
         setLoadingImage(true);
-        let result = await fetch(url)
+        let result = null
+        try {
+            result = await fetch(url)
+        } catch (error) {
+            
+        }
         if (result.status === 200)
             setPosterImage(url)
         setLoadingImage(false)
         setLoadedImage(true)
-        return result.status
+        return result
     }
 
     const onImageError = (e) => {

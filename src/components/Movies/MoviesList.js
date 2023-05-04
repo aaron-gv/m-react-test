@@ -13,6 +13,7 @@ export default function SeriesList({movies}) {
             {
                 movies.map(x =>
                     <Card 
+                        key={x.title}
                         title={x.title}
                         image={image(x)}
                         url=""

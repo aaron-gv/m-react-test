@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Loading from 'components/Loading'
 import SeriesList from './SeriesList'
 import {compareByTitle} from 'common/utils'
-
+import Pagination from 'components/Pagination/Pagination'
 export default function Series() {
     const [loadingInitial, setLoadingInitial] = useState(true);
     const [loadingData, setLoadingData] = useState(false);
@@ -14,6 +14,9 @@ export default function Series() {
     const [yearList, setYearList] = useState([]);
     const [selectedYear, setSelectedYear] = useState("0");
     const [filteredData, setFilteredData] = useState([]);
+    const [pages, setPages] = useState(0);
+    const itemsPerPage = 20;
+    const [dataOffset, setDataOffset] = useState(0);
     const onChangeYearFilter = event => {
         setSelectedYear(event.target.value)
     }
@@ -32,9 +35,12 @@ export default function Series() {
         setLoadingData(true);
         let data = await fetchJson();
 
-        let serieArray = data.entries.filter(x => x.programType === 'movie' && x.releaseYear >= 2010)
-        if (serieArray.length > 20) serieArray = serieArray.slice(0, 19)
+        //let serieArray = data.entries.filter(x => x.programType === 'series' && x.releaseYear >=2010)
+        let serieArray = data.entries.filter(x => x.programType === 'series')
+        //if (serieArray.length > 20) serieArray = serieArray.slice(0, 19)
+        
         serieArray = serieArray.sort(compareByTitle);
+
         let years = [...new Set(serieArray.map(item => item.releaseYear))]; 
         setYearList(years)
         dispatch(load(serieArray));
@@ -51,9 +57,11 @@ export default function Series() {
         let data = series
         if (selectedYear !== "0")
             data = data.filter(x => x.releaseYear == selectedYear)
-        
+        setPages(Math.ceil(data.length/20))
         setFilteredData(data)
+        
     },[series, selectedYear])
+
 
     if (fetchError) 
         return (
@@ -65,7 +73,7 @@ export default function Series() {
             </div>
         )
     return (
-        <div>
+        <div className='overflow-hidden'>
             <div className=" bg-gradient-to-b from-slate-500 to-slate-700 text-white h-12 flex items-center drop-shadow-lg">
                 <span className="ml-10">Series</span>
             </div>
@@ -73,17 +81,25 @@ export default function Series() {
                 <div>Filter by release year: </div>
                 <div className='float-left ml-2'>
                     <select value={selectedYear} onChange={onChangeYearFilter} >
-                        <option value="0">Any</option>
+                        <option key={0} value="0">Any</option>
                         {
                             yearList.map(year => {
-                                return <option value={year}>{year}</option>
+                                return <option key={year} value={year}>{year}</option>
                             })
                         }
                     </select>
                 </div>
             </div>
-            <div className='mt-2'>
-                {(loadingData || loadingInitial) ? <Loading /> : <SeriesList series={filteredData} />}
+            <div className='mt-2 w-full overflow-hidden'>
+                {(loadingData || loadingInitial) ? <Loading /> : 
+                    <div className='overflow-hidden'>
+                        <div className="overflow-hidden">
+                            <SeriesList series={filteredData.slice((dataOffset*20), (dataOffset*20)+itemsPerPage)} />
+                        </div>
+                        <Pagination pages={pages} itemsPerPage={itemsPerPage} current={dataOffset} action={(x) => setDataOffset(x)} />
+                        
+                    </div>
+                }
             </div>
         </div>
     )

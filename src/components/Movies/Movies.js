@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Loading from 'components/Loading'
 import MoviesList from './MoviesList'
 import {compareByTitle} from 'common/utils'
+import Pagination from 'components/Pagination/Pagination';
 
 export default function Movies() {
     const [loadingInitial, setLoadingInitial] = useState(true);
@@ -14,6 +15,9 @@ export default function Movies() {
     const [yearList, setYearList] = useState([]);
     const [selectedYear, setSelectedYear] = useState("0");
     const [filteredData, setFilteredData] = useState([]);
+    const [pages, setPages] = useState(0);
+    const itemsPerPage = 20;
+    const [dataOffset, setDataOffset] = useState(0);
     const onChangeYearFilter = event => {
         setSelectedYear(event.target.value)
     }
@@ -32,8 +36,10 @@ export default function Movies() {
         setLoadingData(true);
         let data = await fetchJson();
         
-        let movieArray = data.entries.filter(x => x.programType === 'movie' && x.releaseYear >= 2010)
-        if (movieArray.length > 20) movieArray = movieArray.slice(0, 19)
+        //let movieArray = data.entries.filter(x => x.programType === 'movie' && x.releaseYear >= 2010)
+        let movieArray = data.entries.filter(x => x.programType === 'movie')
+        //if (movieArray.length > 20) movieArray = movieArray.slice(0, 19)
+        
         movieArray = movieArray.sort(compareByTitle);
         let years = [...new Set(movieArray.map(item => item.releaseYear))]; 
         setYearList(years)
@@ -50,7 +56,7 @@ export default function Movies() {
         let data = movies
         if (selectedYear !== "0")
             data = data.filter(x => x.releaseYear == selectedYear)
-        
+        setPages(Math.ceil(data.length/20))
         setFilteredData(data)
     },[movies, selectedYear])
     if (fetchError) 
@@ -75,14 +81,22 @@ export default function Movies() {
                         <option value="0">Any</option>
                         {
                             yearList.map(year => {
-                                return <option value={year}>{year}</option>
+                                return <option key={year} value={year}>{year}</option>
                             })
                         }
                     </select>
                 </div>
             </div>
-            <div className='mt-2'>
-                {(loadingData || loadingInitial) ? <Loading /> : <MoviesList movies={filteredData} />}
+            <div className='mt-2 w-full overflow-hidden'>
+                {(loadingData || loadingInitial) ? <Loading /> : 
+                    <div className='overflow-hidden'>
+                        <div className="overflow-hidden">
+                            <MoviesList movies={filteredData.slice((dataOffset*20), (dataOffset*20)+itemsPerPage)} />
+                        </div>
+                        <Pagination pages={pages} itemsPerPage={itemsPerPage} current={dataOffset} action={(x) => setDataOffset(x)} />
+                        
+                    </div>
+                }
             </div>
         </div>
     )
